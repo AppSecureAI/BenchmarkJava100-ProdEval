@@ -184,7 +184,7 @@ The "Additional Context Required" designation for cryptographic vulnerabilities 
 
 AppSecAI provides Expert Triage Automation (ETA) and Expert Fix Automation (EFA) to help organizations scale their application security programs. The platform combines deep security expertise with advanced automation to deliver production-ready security improvements at unprecedented speed and scale.
 
-For more information, visit [AppSecAI](https://www.appsecure.ai).
+For more information, visit [AppSecAI](https://www.appsecai.io/).
 
 ## License
 
