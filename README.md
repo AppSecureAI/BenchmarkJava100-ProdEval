@@ -188,7 +188,9 @@ For more information, visit [AppSecAI](https://www.appsecai.io/).
 
 ## License
 
-This repository maintains the license of the original OWASP Benchmark project. See the [OWASP Benchmark repository](https://github.com/OWASP-Benchmark/BenchmarkJava) for license details.
+This repository is licensed under the GNU General Public License v2.0 (GPL-2.0), maintaining compliance with the [OWASP Benchmark](https://github.com/OWASP-Benchmark/BenchmarkJava) license from which the test cases are derived.
+
+See the [LICENSE](LICENSE) file for the complete license text.
 
 ## Acknowledgments
 
