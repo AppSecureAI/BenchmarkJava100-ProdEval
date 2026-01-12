@@ -55,7 +55,31 @@ function setCookie(event) {
 }
 
 function escapeRegExp(str) {
-    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\])/g, "\$1");
+}
+
+// Safely render content in a sandboxed iframe for XSS demonstration
+function renderInSandboxedFrame(content, targetSelector) {
+    const target = $(targetSelector);
+    target.empty();
+
+    // Create sandboxed iframe for isolated XSS demonstration
+    const iframe = document.createElement('iframe');
+    iframe.sandbox = 'allow-same-origin'; // Minimal permissions - no scripts execution in parent context
+    iframe.style.width = '100%';
+    iframe.style.minHeight = '200px';
+    iframe.style.border = '1px solid #ddd';
+    iframe.style.backgroundColor = '#f9f9f9';
+
+    target.append(iframe);
+
+    // Write content to sandboxed iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write('<html><head><style>body { font-family: monospace; white-space: pre-wrap; word-wrap: break-word; padding: 10px; }</style></head><body>');
+    iframeDoc.write(content);
+    iframeDoc.write('</body></html>');
+    iframeDoc.close();
 }
 
 function replaceAll(str, find, replace) {
@@ -79,7 +103,7 @@ function submitHeaderForm(testcase) {
     xhr.onreadystatechange = function () {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
             if (URL.includes("xss")) {
-                $("#code").html(stripHTML(xhr.responseText));
+                renderInSandboxedFrame(stripHTML(xhr.responseText), "#code");
            } else { $("#code").text(decodeEscapeSequence(stripHTML(xhr.responseText))); }
         } else {
             $("#code").text("Error " + xhr.status + " " + xhr.statusText + " occurred.");
@@ -137,7 +161,7 @@ function submitParameterNamesForm(testcase) {
     xhr.onreadystatechange = function () {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
             if (URL.includes("xss")) {
-                $("#code").html(xhr.responseText);
+                renderInSandboxedFrame(xhr.responseText, "#code");
            } else { $("#code").text(decodeEscapeSequence(xhr.responseText)); }
         } else {
             $("#code").text("Error " + xhr.status + " " + xhr.statusText + " occurred.");
@@ -161,7 +185,8 @@ function stripHTML(xmlResponse) {
     if (pIndex > 0) {
         result = xmlResponse.substring(pIndex + 4, xmlResponse.length);
     }
-    result = result.replaceAll("<br>", "\n"); // Replace all <br>'s with carriage returns'
+    result = result.replaceAll("<br>", "
+"); // Replace all <br>'s with carriage returns'
 
     return result;
 }
@@ -195,7 +220,8 @@ function getXMLMsgValues(xmlResponse) {
     // Crude: Rips out XML content we don't want to display in the browser'
     var result = xmlResponse.replaceAll('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', "");
     result = result.replaceAll("<xMLMessages>","").replaceAll("</xMLMessages>","").replaceAll("<message><msg>","");
-    result = result.replaceAll("</msg></message>","\n");
+    result = result.replaceAll("</msg></message>","
+");
 
     return result;
 }
@@ -245,8 +271,11 @@ function getJsonMsgValues(jsonResponse) {
         const prefix = '{"msg":"';
         var msgString = JSON.stringify(msg); // e.g., {"msg":"Here is the standard output of the command:"}
         // FIXME: This is a hack. There has to be a better/more native way in JavaScript
-        msgString = msgString.substring(prefix.length, msgString.length - 2).replaceAll("\\n", "\n");
-        result += msgString + "\n";
+        msgString = msgString.substring(prefix.length, msgString.length - 2).replaceAll("
+", "
+");
+        result += msgString + "
+";
     });
     
     return result;
