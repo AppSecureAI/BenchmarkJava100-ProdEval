@@ -50,7 +50,17 @@ public class BenchmarkTest01334 extends HttpServlet {
         String bar = new Test().doSomething(request, param);
 
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            // Use HMAC-SHA256 instead of MD5 for secure hashing
+            String secretKey = System.getenv("HMAC_SECRET_KEY");
+            if (secretKey == null || secretKey.trim().isEmpty()) {
+                throw new ServletException(
+                        "HMAC_SECRET_KEY environment variable must be set for secure hashing");
+            }
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec secretKeySpec =
+                    new javax.crypto.spec.SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+            mac.init(secretKeySpec);
+
             byte[] input = {(byte) '?'};
             Object inputParam = bar;
             if (inputParam instanceof String) input = ((String) inputParam).getBytes();
@@ -65,9 +75,8 @@ public class BenchmarkTest01334 extends HttpServlet {
                 }
                 input = java.util.Arrays.copyOf(strInput, i);
             }
-            md.update(input);
 
-            byte[] result = md.digest();
+            byte[] result = mac.doFinal(input);
             java.io.File fileTarget =
                     new java.io.File(
                             new java.io.File(org.owasp.benchmark.helpers.Utils.TESTFILES_DIR),
@@ -77,7 +86,8 @@ public class BenchmarkTest01334 extends HttpServlet {
             fw.write(
                     "hash_value="
                             + org.owasp.esapi.ESAPI.encoder().encodeForBase64(result, true)
-                            + "\n");
+                            + "
+");
             fw.close();
             response.getWriter()
                     .println(
@@ -89,7 +99,7 @@ public class BenchmarkTest01334 extends HttpServlet {
                                             .encodeForHTML(new String(input))
                                     + "' hashed and stored<br/>");
 
-        } catch (java.security.NoSuchAlgorithmException e) {
+        } catch (java.security.NoSuchAlgorithmException | java.security.InvalidKeyException e) {
             System.out.println("Problem executing hash - TestCase");
             throw new ServletException(e);
         }
