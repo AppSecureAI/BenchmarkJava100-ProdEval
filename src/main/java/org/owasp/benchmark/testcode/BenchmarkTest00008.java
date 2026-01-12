@@ -18,6 +18,9 @@
 package org.owasp.benchmark.testcode;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +31,14 @@ import javax.servlet.http.HttpServletResponse;
 public class BenchmarkTest00008 extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+
+    // Whitelist of allowed stored procedure names
+    private static final Set<String> ALLOWED_PROCEDURES = new HashSet<>(Arrays.asList(
+        "verifyUserPassword",
+        "getUserData",
+        "updateUserProfile",
+        "getSystemInfo"
+    ));
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -48,6 +59,12 @@ public class BenchmarkTest00008 extends HttpServlet {
 
         // URL Decode the header value since req.getHeader() doesn't. Unlike req.getParameter().
         param = java.net.URLDecoder.decode(param, "UTF-8");
+
+        // Validate procedure name against whitelist to prevent SQL injection
+        if (!ALLOWED_PROCEDURES.contains(param)) {
+            response.getWriter().println("Error processing request.");
+            return;
+        }
 
         String sql = "{call " + param + "}";
 
