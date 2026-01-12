@@ -49,6 +49,12 @@ public class BenchmarkTest02244 extends HttpServlet {
 
         String bar = doSomething(request, param);
 
+        // Validate input against whitelist to prevent command injection
+        if (bar != null && !bar.matches("^[a-zA-Z0-9 .,_-]*$")) {
+            response.getWriter().println("Invalid input: only alphanumeric characters, spaces, and basic punctuation (.,_-) are allowed");
+            return;
+        }
+
         java.util.List<String> argList = new java.util.ArrayList<String>();
 
         String osName = System.getProperty("os.name");
