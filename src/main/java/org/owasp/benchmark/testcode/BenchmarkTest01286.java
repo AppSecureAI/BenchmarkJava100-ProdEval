@@ -45,6 +45,12 @@ public class BenchmarkTest01286 extends HttpServlet {
 
         String bar = new Test().doSomething(request, param);
 
+        // Validate input to prevent command injection - only allow alphanumeric, dots, and hyphens
+        if (!bar.matches("^[a-zA-Z0-9.-]*$")) {
+            response.getWriter().println("Invalid input: only alphanumeric characters, dots, and hyphens are allowed");
+            return;
+        }
+
         String cmd = "";
         String a1 = "";
         String a2 = "";
@@ -57,10 +63,9 @@ public class BenchmarkTest01286 extends HttpServlet {
             cmd = org.owasp.benchmark.helpers.Utils.getOSCommandString("echo");
             args = new String[] {a1, a2, cmd, bar};
         } else {
-            a1 = "sh";
-            a2 = "-c";
-            cmd = org.owasp.benchmark.helpers.Utils.getOSCommandString("ping -c1 ");
-            args = new String[] {a1, a2, cmd + bar};
+            // Execute ping directly without shell interpretation to prevent command injection
+            cmd = org.owasp.benchmark.helpers.Utils.getOSCommandString("ping");
+            args = new String[] {cmd, "-c1", bar};
         }
 
         Runtime r = Runtime.getRuntime();
