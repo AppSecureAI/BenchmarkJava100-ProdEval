@@ -20,6 +20,7 @@ package org.owasp.benchmark.helpers;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -136,17 +137,17 @@ public class DatabaseHelper {
     private static void initData() {
         try {
             executeSQLCommand(
-                    "INSERT INTO USERS (username, password) VALUES('User01', 'P455w0rd')");
+                    "INSERT INTO USERS (username, password) VALUES(?, ?)", "User01", "P455w0rd");
             executeSQLCommand(
-                    "INSERT INTO USERS (username, password) VALUES('User02', 'B3nchM3rk')");
-            executeSQLCommand("INSERT INTO USERS (username, password) VALUES('User03', 'a$c11')");
-            executeSQLCommand("INSERT INTO USERS (username, password) VALUES('foo', 'bar')");
+                    "INSERT INTO USERS (username, password) VALUES(?, ?)", "User02", "B3nchM3rk");
+            executeSQLCommand("INSERT INTO USERS (username, password) VALUES(?, ?)", "User03", "a$c11");
+            executeSQLCommand("INSERT INTO USERS (username, password) VALUES(?, ?)", "foo", "bar");
 
-            executeSQLCommand("INSERT INTO SCORE (nick, score) VALUES('User03', 155)");
-            executeSQLCommand("INSERT INTO SCORE (nick, score) VALUES('foo', 40)");
+            executeSQLCommand("INSERT INTO SCORE (nick, score) VALUES(?, ?)", "User03", 155);
+            executeSQLCommand("INSERT INTO SCORE (nick, score) VALUES(?, ?)", "foo", 40);
 
             executeSQLCommand(
-                    "INSERT INTO EMPLOYEE (first_name, last_name, salary) VALUES('foo', 'bar', 34567)");
+                    "INSERT INTO EMPLOYEE (first_name, last_name, salary) VALUES(?, ?, ?)", "foo", "bar", 34567);
             conn.commit();
         } catch (Exception e1) {
             System.out.println("Problem with database init/reset: " + e1.getMessage());
@@ -169,8 +170,32 @@ public class DatabaseHelper {
     }
 
     public static void executeSQLCommand(String sql) throws Exception {
-        Statement stmt = getSqlStatement();
-        stmt.executeUpdate(sql);
+        executeSQLCommand(sql, new Object[0]);
+    }
+
+    public static void executeSQLCommand(String sql, Object... params) throws Exception {
+        Connection connection = getSqlConnection();
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+                if (param instanceof String) {
+                    pstmt.setString(i + 1, (String) param);
+                } else if (param instanceof Integer) {
+                    pstmt.setInt(i + 1, (Integer) param);
+                } else if (param instanceof Long) {
+                    pstmt.setLong(i + 1, (Long) param);
+                } else if (param instanceof Double) {
+                    pstmt.setDouble(i + 1, (Double) param);
+                } else if (param instanceof Boolean) {
+                    pstmt.setBoolean(i + 1, (Boolean) param);
+                } else if (param == null) {
+                    pstmt.setObject(i + 1, null);
+                } else {
+                    pstmt.setObject(i + 1, param);
+                }
+            }
+            pstmt.executeUpdate();
+        }
     }
 
     public static void outputUpdateComplete(String sql, HttpServletResponse response)
@@ -178,17 +203,24 @@ public class DatabaseHelper {
 
         PrintWriter out = response.getWriter();
 
-        out.write("<!DOCTYPE html>\n<html>\n<body>\n<p>");
+        out.write("<!DOCTYPE html>
+<html>
+<body>
+<p>");
         out.write(
                 "Update complete for query: "
                         + org.owasp.esapi.ESAPI.encoder().encodeForHTML(sql)
-                        + "<br>\n");
-        out.write("</p>\n</body>\n</html>");
+                        + "<br>
+");
+        out.write("</p>
+</body>
+</html>");
     }
 
     public static void outputUpdateComplete(String sql, List<XMLMessage> resp)
             throws java.sql.SQLException, IOException {
-        resp.add(new XMLMessage("Update complete for query: " + sql + "\n"));
+        resp.add(new XMLMessage("Update complete for query: " + sql + "
+"));
     }
 
     public static void printResults(
@@ -197,13 +229,20 @@ public class DatabaseHelper {
 
         PrintWriter out = response.getWriter();
         out.write(
-                "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n"
-                        + "<html>\n"
-                        + "<head>\n"
-                        + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
-                        + "</head>\n"
-                        + "<body>\n"
-                        + "<p>\n");
+                "<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+"
+                        + "<html>
+"
+                        + "<head>
+"
+                        + "<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+"
+                        + "</head>
+"
+                        + "<body>
+"
+                        + "<p>
+");
 
         try {
             ResultSet rs = statement.getResultSet();
@@ -216,7 +255,8 @@ public class DatabaseHelper {
 
             ResultSetMetaData rsmd = rs.getMetaData();
             int numberOfColumns = rsmd.getColumnCount();
-            out.write("Your results are:<br>\n");
+            out.write("Your results are:<br>
+");
 
             while (rs.next()) {
                 for (int i = 1; i <= numberOfColumns; i++) {
@@ -226,11 +266,14 @@ public class DatabaseHelper {
                     String columnValue = rs.getString(i);
                     out.write(ESAPI.encoder().encodeForHTML(columnValue));
                 }
-                out.write("<br>\n");
+                out.write("<br>
+");
             }
 
         } finally {
-            out.write("</p>\n</body>\n</html>");
+            out.write("</p>
+</body>
+</html>");
         }
     }
 
@@ -248,12 +291,14 @@ public class DatabaseHelper {
 
         ResultSet rs = statement.getResultSet();
         if (rs == null) {
-            resp.add(new XMLMessage("Results set is empty for query: " + sql + "\n"));
+            resp.add(new XMLMessage("Results set is empty for query: " + sql + "
+"));
             return;
         }
         ResultSetMetaData rsmd = rs.getMetaData();
         int numberOfColumns = rsmd.getColumnCount();
-        resp.add(new XMLMessage("Your results are:\n"));
+        resp.add(new XMLMessage("Your results are:
+"));
         while (rs.next()) {
             for (int i = 1; i <= numberOfColumns; i++) {
                 String columnValue = rs.getString(i);
@@ -261,7 +306,8 @@ public class DatabaseHelper {
                     resp.add(new XMLMessage(columnValue));
                 } else resp.add(new XMLMessage(",  " + columnValue));
             }
-            resp.add(new XMLMessage("\n"));
+            resp.add(new XMLMessage("
+"));
         }
     }
 
@@ -269,7 +315,10 @@ public class DatabaseHelper {
             throws java.sql.SQLException, IOException {
 
         PrintWriter out = response.getWriter();
-        out.write("<!DOCTYPE html>\n<html>\n<body>\n<p>");
+        out.write("<!DOCTYPE html>
+<html>
+<body>
+<p>");
 
         try {
             if (rs == null) {
@@ -280,17 +329,21 @@ public class DatabaseHelper {
             }
             ResultSetMetaData rsmd = rs.getMetaData();
             int numberOfColumns = rsmd.getColumnCount();
-            out.write("Your results are:<br>\n");
+            out.write("Your results are:<br>
+");
             while (rs.next()) {
                 for (int i = 1; i <= numberOfColumns; i++) {
                     String columnValue = rs.getString(i);
                     out.write(ESAPI.encoder().encodeForHTML(columnValue));
                 }
-                out.write("<br>\n");
+                out.write("<br>
+");
             }
 
         } finally {
-            out.write("</p>\n</body>\n</html>");
+            out.write("</p>
+</body>
+</html>");
         }
     }
 
@@ -298,25 +351,31 @@ public class DatabaseHelper {
             throws java.sql.SQLException, IOException {
 
         if (rs == null) {
-            resp.add(new XMLMessage("Results set is empty for query: " + sql + "\n"));
+            resp.add(new XMLMessage("Results set is empty for query: " + sql + "
+"));
             return;
         }
         ResultSetMetaData rsmd = rs.getMetaData();
         int numberOfColumns = rsmd.getColumnCount();
-        resp.add(new XMLMessage("Your results are:\n"));
+        resp.add(new XMLMessage("Your results are:
+"));
         while (rs.next()) {
             for (int i = 1; i <= numberOfColumns; i++) {
                 String columnValue = rs.getString(i);
                 resp.add(new XMLMessage(columnValue));
             }
-            resp.add(new XMLMessage("\n"));
+            resp.add(new XMLMessage("
+"));
         }
     }
 
     public static void printResults(String query, int[] counts, HttpServletResponse response)
             throws IOException {
         PrintWriter out = response.getWriter();
-        out.write("<!DOCTYPE html>\n<html>\n<body>\n<p>");
+        out.write("<!DOCTYPE html>
+<html>
+<body>
+<p>");
         out.write("For query: " + ESAPI.encoder().encodeForHTML(query) + "<br>");
         try {
             if (counts.length > 0) {
@@ -331,14 +390,17 @@ public class DatabaseHelper {
                 }
             }
         } finally {
-            out.write("</p>\n</body>\n</html>");
+            out.write("</p>
+</body>
+</html>");
         }
     }
 
     public static void printResults(String query, int[] counts, List<XMLMessage> resp)
             throws IOException {
 
-        resp.add(new XMLMessage("For query:\n"));
+        resp.add(new XMLMessage("For query:
+"));
 
         if (counts.length > 0) {
             if (counts[0] == Statement.SUCCESS_NO_INFO) {
@@ -368,7 +430,8 @@ public class DatabaseHelper {
                             + jdbcType
                             + ", which the DBMS calls "
                             + name
-                            + "<br>\n");
+                            + "<br>
+");
         }
     }
 }
