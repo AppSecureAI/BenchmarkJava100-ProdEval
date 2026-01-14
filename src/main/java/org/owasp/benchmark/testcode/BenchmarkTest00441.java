@@ -51,7 +51,9 @@ public class BenchmarkTest00441 extends HttpServlet {
 
         try {
             java.sql.PreparedStatement statement =
-                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement().getConnection().prepareStatement(sql, new int[] {1, 2});
+                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement()
+                            .getConnection()
+                            .prepareStatement(sql, new int[] {1, 2});
             statement.setString(1, bar);
             int count = statement.executeUpdate();
             org.owasp.benchmark.helpers.DatabaseHelper.outputUpdateComplete(sql, response);
