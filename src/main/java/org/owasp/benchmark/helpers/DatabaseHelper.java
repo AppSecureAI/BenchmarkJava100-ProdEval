@@ -168,7 +168,7 @@ public class DatabaseHelper {
         return conn;
     }
 
-    public static void executeSQLCommand(String sql) throws Exception {
+    private static void executeSQLCommand(String sql) throws Exception {
         Statement stmt = getSqlStatement();
         stmt.executeUpdate(sql);
     }

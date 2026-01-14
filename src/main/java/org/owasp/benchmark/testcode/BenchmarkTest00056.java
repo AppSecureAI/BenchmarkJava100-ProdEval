@@ -37,6 +37,7 @@ public class BenchmarkTest00056 extends HttpServlet {
                 new javax.servlet.http.Cookie("BenchmarkTest00056", "someSecret");
         userCookie.setMaxAge(60 * 3); // Store cookie for 3 minutes
         userCookie.setSecure(true);
+        userCookie.setHttpOnly(true);
         userCookie.setPath(request.getRequestURI());
         userCookie.setDomain(new java.net.URL(request.getRequestURL().toString()).getHost());
         response.addCookie(userCookie);
@@ -74,9 +75,7 @@ public class BenchmarkTest00056 extends HttpServlet {
             bar = valuesList.get(1); // get the last 'safe' value
         }
 
-        // Code based on example from:
-        // http://examples.javacodegeeks.com/core-java/crypto/encrypt-decrypt-file-stream-with-des/
-        // 8-byte initialization vector
+        // 12-byte initialization vector for AES-GCM
         //	    byte[] iv = {
         //	    	(byte)0xB2, (byte)0x12, (byte)0xD5, (byte)0xB2,
         //	    	(byte)0x44, (byte)0x21, (byte)0xC3, (byte)0xC3033
@@ -90,7 +89,7 @@ public class BenchmarkTest00056 extends HttpServlet {
             // Prepare the cipher to encrypt
             javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("AES").generateKey();
             java.security.spec.AlgorithmParameterSpec paramSpec =
-                    new javax.crypto.spec.IvParameterSpec(iv);
+                    new javax.crypto.spec.GCMParameterSpec(128, iv);
             c.init(javax.crypto.Cipher.ENCRYPT_MODE, key, paramSpec);
 
             // encrypt and store the results
