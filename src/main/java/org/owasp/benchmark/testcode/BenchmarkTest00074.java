@@ -102,8 +102,7 @@ public class BenchmarkTest00074 extends HttpServlet {
             fw.write(
                     "hash_value="
                             + org.owasp.esapi.ESAPI.encoder().encodeForBase64(result, true)
-                            + "
-");
+                            + "\n");
             fw.close();
             response.getWriter()
                     .println(
