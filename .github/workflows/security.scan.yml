@@ -1,26 +1,24 @@
-name: Security Scan
+name: Manual Scan Triage and Remediation
+
+permissions:
+  contents: read
+  id-token: write
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  security-scan:
+  triageAndRemediation:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
-      - uses: actions/checkout@v4
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Run Semgrep
         run: |
           pip install semgrep
-          semgrep --config=auto --json > semgrep_results.json 
-
+          semgrep scan --config auto --json --output semgrep_results.json .
       - name: AppSecAI Security Analysis
         uses: AppSecureAI/automation-action@v1
         with:
