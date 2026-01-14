@@ -113,7 +113,8 @@ public class Utils {
             File testFile = new File(TESTFILES_DIR + "FileName");
             try {
                 PrintWriter out = new PrintWriter(testFile);
-                out.write("Test is a test file.\n");
+                out.write("Test is a test file.
+");
                 out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -121,7 +122,8 @@ public class Utils {
             File testFile2 = new File(TESTFILES_DIR + "SafeText");
             try {
                 PrintWriter out = new PrintWriter(testFile2);
-                out.write("Test is a 'safe' test file.\n");
+                out.write("Test is a 'safe' test file.
+");
                 out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -129,7 +131,8 @@ public class Utils {
             File secreTestFile = new File(TESTFILES_DIR + "SecretFile");
             try {
                 PrintWriter out = new PrintWriter(secreTestFile);
-                out.write("Test is a 'secret' file that no one should find.\n");
+                out.write("Test is a 'secret' file that no one should find.
+");
                 out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -144,10 +147,6 @@ public class Utils {
             perms.add(PosixFilePermission.OWNER_READ);
             perms.add(PosixFilePermission.OWNER_WRITE);
             perms.add(PosixFilePermission.OWNER_EXECUTE);
-            perms.add(PosixFilePermission.GROUP_READ);
-            perms.add(PosixFilePermission.GROUP_EXECUTE);
-            perms.add(PosixFilePermission.OTHERS_READ);
-            perms.add(PosixFilePermission.OTHERS_EXECUTE);
 
             try {
                 Files.setPosixFilePermissions(script.toPath(), perms);
@@ -223,13 +222,20 @@ public class Utils {
             throws IOException {
         PrintWriter out = response.getWriter();
         out.write(
-                "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n"
-                        + "<html>\n"
-                        + "<head>\n"
-                        + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
-                        + "</head>\n"
-                        + "<body>\n"
-                        + "<p>\n");
+                "<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+"
+                        + "<html>
+"
+                        + "<head>
+"
+                        + "<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+"
+                        + "</head>
+"
+                        + "<body>
+"
+                        + "<p>
+");
 
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -237,7 +243,8 @@ public class Utils {
         try {
             // read the output from the command
             // System.out.println("Here is the standard output of the
-            // command:\n");
+            // command:
+");
             out.write("Here is the standard output of the command:<br>");
             String s = null;
             while ((s = stdInput.readLine()) != null) {
@@ -247,7 +254,8 @@ public class Utils {
 
             // read any errors from the attempted command
             // System.out.println("Here is the standard error of the command (if
-            // any):\n");
+            // any):
+");
             out.write("<br>Here is the std err of the command (if any):<br>");
             while ((s = stdError.readLine()) != null) {
                 out.write(ESAPI.encoder().encodeForHTML(s));
@@ -274,13 +282,15 @@ public class Utils {
             StringBuffer outError = new StringBuffer();
 
             while ((s = stdInput.readLine()) != null) {
-                out.append(s).append("\n");
+                out.append(s).append("
+");
             }
             resp.add(new XMLMessage(out.toString()));
             // read any errors from the attempted command
             resp.add(new XMLMessage("Here is the std err of the command (if any):"));
             while ((s = stdError.readLine()) != null) {
-                outError.append(s).append("\n");
+                outError.append(s).append("
+");
             }
 
             resp.add(new XMLMessage(outError.toString()));
