@@ -83,8 +83,7 @@ public class BenchmarkTest00056 extends HttpServlet {
         byte[] iv = random.generateSeed(12); // AES-GCM requires 12 byte IV
 
         try {
-            javax.crypto.Cipher c =
-                    javax.crypto.Cipher.getInstance("AES/GCM/NoPadding", "SunJCE");
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding", "SunJCE");
             // Prepare the cipher to encrypt
             javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("AES").generateKey();
             java.security.spec.AlgorithmParameterSpec paramSpec =
