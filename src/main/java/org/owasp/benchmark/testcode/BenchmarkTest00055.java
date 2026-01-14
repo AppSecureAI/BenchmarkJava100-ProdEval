@@ -65,15 +65,11 @@ public class BenchmarkTest00055 extends HttpServlet {
 
         String bar = param;
 
-        // Code based on example from:
-        // http://examples.javacodegeeks.com/core-java/crypto/encrypt-decrypt-file-stream-with-des/
-        // 8-byte initialization vector
-        //	    byte[] iv = {
-        //	    	(byte)0xB2, (byte)0x12, (byte)0xD5, (byte)0xB2,
-        //	    	(byte)0x44, (byte)0x21, (byte)0xC3, (byte)0xC3033
-        //	    };
+        // Code uses AES encryption (upgraded from deprecated DES)
+        // Note: This test case only encrypts data (no decryption), so algorithm change is fully compatible
+        // 16-byte initialization vector for AES
         java.security.SecureRandom random = new java.security.SecureRandom();
-        byte[] iv = random.generateSeed(16); // AES requires 16 byte keys
+        byte[] iv = random.generateSeed(16); // AES requires 16 byte IV
 
         try {
             javax.crypto.Cipher c =
