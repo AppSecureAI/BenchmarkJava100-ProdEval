@@ -95,8 +95,7 @@ public class BenchmarkTest00123 extends HttpServlet {
             fw.write(
                     "secret_value="
                             + org.owasp.esapi.ESAPI.encoder().encodeForBase64(result, true)
-                            + "
-");
+                            + "\n");
             fw.close();
             response.getWriter()
                     .println(
