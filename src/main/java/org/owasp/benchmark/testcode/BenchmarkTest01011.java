@@ -37,6 +37,7 @@ public class BenchmarkTest01011 extends HttpServlet {
                 new javax.servlet.http.Cookie("BenchmarkTest01011", "bar");
         userCookie.setMaxAge(60 * 3); // Store cookie for 3 minutes
         userCookie.setSecure(true);
+        userCookie.setHttpOnly(true);
         userCookie.setPath(request.getRequestURI());
         userCookie.setDomain(new java.net.URL(request.getRequestURL().toString()).getHost());
         response.addCookie(userCookie);
@@ -67,8 +68,9 @@ public class BenchmarkTest01011 extends HttpServlet {
         String sql = "SELECT * from USERS where USERNAME='foo' and PASSWORD=?";
 
         try {
-            java.sql.Connection connection =
-                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement().getConnection();
+            java.sql.Statement baseStatement =
+                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement();
+            java.sql.Connection connection = baseStatement.getConnection();
             java.sql.PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, bar);
             statement.addBatch();

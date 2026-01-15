@@ -51,12 +51,19 @@ public class BenchmarkTest00616 extends HttpServlet {
             java.util.Properties benchmarkprops = new java.util.Properties();
             benchmarkprops.load(
                     this.getClass().getClassLoader().getResourceAsStream("benchmark.properties"));
-            String algorithm = benchmarkprops.getProperty("cryptoAlg1", "DESede/ECB/PKCS5Padding");
+            String algorithm = benchmarkprops.getProperty("cryptoAlg1", "AES/CBC/PKCS5Padding");
             javax.crypto.Cipher c = javax.crypto.Cipher.getInstance(algorithm);
 
             // Prepare the cipher to encrypt
-            javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("DES").generateKey();
-            c.init(javax.crypto.Cipher.ENCRYPT_MODE, key);
+            javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("AES").generateKey();
+
+            // Generate a random IV for CBC mode
+            byte[] iv = new byte[c.getBlockSize()];
+            java.security.SecureRandom random = new java.security.SecureRandom();
+            random.nextBytes(iv);
+            javax.crypto.spec.IvParameterSpec ivSpec = new javax.crypto.spec.IvParameterSpec(iv);
+
+            c.init(javax.crypto.Cipher.ENCRYPT_MODE, key, ivSpec);
 
             // encrypt and store the results
             byte[] input = {(byte) '?'};
@@ -73,7 +80,12 @@ public class BenchmarkTest00616 extends HttpServlet {
                 }
                 input = java.util.Arrays.copyOf(strInput, i);
             }
-            byte[] result = c.doFinal(input);
+            byte[] encryptedData = c.doFinal(input);
+
+            // Prepend IV to encrypted data for storage
+            byte[] result = new byte[iv.length + encryptedData.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encryptedData, 0, result, iv.length, encryptedData.length);
 
             java.io.File fileTarget =
                     new java.io.File(
@@ -100,7 +112,8 @@ public class BenchmarkTest00616 extends HttpServlet {
                 | javax.crypto.NoSuchPaddingException
                 | javax.crypto.IllegalBlockSizeException
                 | javax.crypto.BadPaddingException
-                | java.security.InvalidKeyException e) {
+                | java.security.InvalidKeyException
+                | java.security.InvalidAlgorithmParameterException e) {
             response.getWriter()
                     .println(
                             "Problem executing crypto - javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) Test Case");
