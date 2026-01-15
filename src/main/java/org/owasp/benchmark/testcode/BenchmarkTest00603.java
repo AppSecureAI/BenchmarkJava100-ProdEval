@@ -65,7 +65,9 @@ public class BenchmarkTest00603 extends HttpServlet {
 
         try {
             java.sql.PreparedStatement statement =
-                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement().getConnection().prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+                    org.owasp.benchmark.helpers.DatabaseHelper.getSqlStatement()
+                            .getConnection()
+                            .prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, bar);
             statement.execute();
             org.owasp.benchmark.helpers.DatabaseHelper.printResults(statement, sql, response);
